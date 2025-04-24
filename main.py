@@ -81,7 +81,7 @@ def decode(code: list) -> str:
 
     # 删除校验词与模式字符
     code_character[-5:] = []
-    print("\nCode Character(Whitout Check Characters):")
+    print("\nCode Character(Without Check Characters):")
     print(code_character)
 
     # 将字符解码为ASCII字符
