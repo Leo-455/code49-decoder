@@ -736,11 +736,13 @@ Z_WEIGHTS = [
 ]
 
 
+# [Modified] Change char map to list,because Mode 5 contain multi-character words
 # CHAR_MAP = "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ-. $/+%"
 CHAR_MAP = ['0', '1', '2', '3', '4', '5', '6', '7', '8', '9',
             'A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L', 'M', 'N', 'O', 'P', 'Q', 'R', 'S', 'T', 'U', 'V', 'W', 'X', 'Y', 'Z',
             '-', '.', 'Sp', '$', '/', '+', '%', 'S1', 'S2', 'FNC1', 'FNC2', 'FNC3', '<NS>']
 
+# [Modified] ADD a ASCII char map, the index of list is the Dec value of ASCII
 ASCII_CHAR_MAP = ['S1Sp', 'S1A', 'S1B', 'S1C', 'S1D', 'S1E', 'S1F', 'S1G', 'S1H', 'S1I', 'S1J', 'S1K', 'S1L', 'S1M', 'S1N', 'S1O', 'S1P', 'S1Q', 'S1R', 'S1S', 'S1T', 'S1U', 'S1V', 'S1W', 'S1X', 'S1Y', 'S1Z',
                   'S11', 'S12', 'S13', 'S14', 'S15', 'Sp', 'S16', 'S17', 'S18', '$', '%', 'S19', 'S10', 'S1-', 'S1.', 'S1$', '+', 'S1/', '-', '.', '/', '0', '1', '2', '3', '4', '5', '6', '7', '8', '9', 'S1+',
                   'S21', 'S22', 'S23', 'S24', 'S25', 'S26', 'A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L', 'M', 'N', 'O', 'P', 'Q', 'R', 'S', 'T', 'U', 'V', 'W', 'X', 'Y', 'Z', 'S27', 'S28', 'S29', 'S20', 'S2-', 'S2.',

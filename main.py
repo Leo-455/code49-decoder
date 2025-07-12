@@ -18,7 +18,7 @@ def decode(code: list) -> str:
     for i, row in enumerate(code):
         # Extract pattern, remove head '11' and tail '4'
         if len(row) != 35:
-            print(f"[ERROR]: Row{i + 1} length incorrect")
+            print(f"\033[1;41m[ERROR]\033[0m: Row{i + 1} length incorrect")
             success = False
 
         ptrn = row
@@ -38,7 +38,7 @@ def decode(code: list) -> str:
                 else:
                     value = c49.ODD_PARITY_PATTERNS.index(ptrn[j << 3:(j + 1) << 3])
             except ValueError as err:
-                print(f"[ERROR]: Row{i + 1} Word{j + 1} {err} Please Check pattern!")
+                print(f"\033[1;41m[ERROR]\033[0m: Row{i + 1} Word{j + 1} {err} Please Check pattern!")
                 value = 'N/A'
                 success = False
 
@@ -72,15 +72,45 @@ def decode(code: list) -> str:
                 row_sum += character_value
 
         if row_sum % 49 == row_character_value[-1]:
-            print(f"Row{i + 1}: {row_character_value} Correct!")
+            print(f"Row{i + 1}: {row_character_value} \033[1;32mCorrect!\033[0m")
         else:
-            print(f"Row{i + 1}: {row_character_value} [ERROR]")
+            print(f"Row{i + 1}: {row_character_value} \033[1;30;41m[ERROR]\033[0m")
             success = False
         i += 1
 
+    # 检查校验词
+    row_len = len(code)
+    try:
+        symbol_check_character1 = 38 * code_character_value[-1][6]
+        symbol_check_character2 = 16 * code_character_value[-1][6] + c49.Y_WEIGHTS[(row_len - 1) * 4] * code_value[-1][0]
+        symbol_check_character3 = 20 * code_character_value[-1][6] + c49.X_WEIGHTS[(row_len - 1) * 4] * code_value[-1][0] + c49.X_WEIGHTS[(row_len - 1) * 4 + 1] * code_value[-1][1]
+        for i in range(row_len - 1):
+            for j in range(4):
+                symbol_check_character1 += c49.Z_WEIGHTS[i * 4 + j] * code_value[i][j]
+                symbol_check_character2 += c49.Y_WEIGHTS[i * 4 + j] * code_value[i][j]
+                symbol_check_character3 += c49.X_WEIGHTS[i * 4 + j] * code_value[i][j]
+        symbol_check_character1 = symbol_check_character1 % 2401
+        symbol_check_character2 = symbol_check_character2 % 2401
+        symbol_check_character3 = symbol_check_character3 % 2401
+
+        if row_len <= 6:  # 行数小于等于6时有两个校验词
+            if symbol_check_character2 == code_value[-1][1] and symbol_check_character3 == code_value[-1][2]:
+                print("\nTotal Code Check: \033[1;32mCorrect!\033[0m")
+            else:
+                success = False
+                print("\nTotal Code Check: \033[1;41m[ERROR]\033[0m")
+        elif row_len == 7 or row_len == 8:  # 行数为7或8时有三个校验词
+            if symbol_check_character2 == code_value[-1][1] and symbol_check_character3 == code_value[-1][2] and symbol_check_character1 == code_value[-1][0]:
+                print("\nTotal Code Check: \033[1;32mCorrect!\033[0m")
+            else:
+                success = False
+                print("\nTotal Code Check: \033[1;41m[ERROR]\033[0m")
+    except Exception:
+        success = False
+        print("\nTotal Code Check: \033[1;41m[ERROR]\033[0m")
+
     # 将字符值解码为字符
     code_character = []  # 存储字符
-    row_len = len(code)
     for i, row_character_value in enumerate(code_character_value):
 
         # 计算最后一行的模式数字
@@ -111,7 +141,7 @@ def decode(code: list) -> str:
         case 5:
             code_character.insert(0, 'S2')
         case 'N/A':
-            print("decode as mode 0")
+            print("\033[0;31mdecode as mode 0\033[0m")
             success = False
 
     # 删除校验词与模式字符
@@ -124,20 +154,36 @@ def decode(code: list) -> str:
 
     # 将字符解码为ASCII字符
     # buffer为char的前一个字符
+    mode = 0
     buffer = None
     output = ''
-    for char in code_character:
+    for i, char in enumerate(code_character):
         if char != 'N/A':
-            if buffer == 'S2' or buffer == 'S1':  # 前一个字符为S1/S2 相加后解码
-                output += chr(c49.ASCII_CHAR_MAP.index(buffer + char))
-
-            else:  # 前一个字符不是S1/S2 判断当前字符
-                if char == 'S2' or char == 'S1':  # 当前字符是S1/S2 直接进行下一个循环
-                    pass
-                elif char == '<NS>':
+            if char == '<NS>':
+                if len(code_character) == i + 1:  # <NS>后面没东西了（后面是校验词） 结束
                     break
                 else:
-                    output += chr(c49.ASCII_CHAR_MAP.index(char))
+                    if code_character[i + 1] == '<NS>':  # <NS>后面是<NS>
+                        pass
+                    else:  # <NS>后面有东西 切换字母数字/数字模式
+                        if mode == 0:
+                            mode = 1
+                        elif mode == 1:
+                            mode = 0
+                    continue
+
+            match mode:
+                case 0:  # 字母数字模式
+                    if buffer == 'S2' or buffer == 'S1':  # 前一个字符为S1/S2 相加后解码
+                        output += chr(c49.ASCII_CHAR_MAP.index(buffer + char))
+
+                    else:  # 前一个字符不是S1/S2 判断当前字符
+                        if char == 'S2' or char == 'S1':  # 当前字符是S1/S2 直接进行下一个循环
+                            pass
+                        else:
+                            output += chr(c49.ASCII_CHAR_MAP.index(char))
+                case 1:  # 数字模式(还没写)
+                    pass
 
             buffer = char
         else:
@@ -174,8 +220,8 @@ if __name__ == '__main__':
 
     text = decode(code)
     if success is True:
-        print("\ndecode SUCCESS!")
+        print("\ndecode \033[1;32mSUCCESS!\033[0m")
     elif success is False:
-        print("\nERROR occurred during decode The result might be wrong.")
+        print("\033[0;31m\nERROR occurred during decode The result might be wrong.\033[0m")
     print("Result:")
     print(text)
