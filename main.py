@@ -1,5 +1,8 @@
 import code49 as c49
 
+import os
+import time
+
 
 # Decoder
 def decode(code: list) -> str:
@@ -140,7 +143,7 @@ def decode(code: list) -> str:
             code_character.insert(0, 'S1')
         case 5:
             code_character.insert(0, 'S2')
-        case 'N/A':
+        case _:
             print("\033[0;31mdecode as mode 0\033[0m")
             success = False
 
@@ -194,34 +197,167 @@ def decode(code: list) -> str:
     return output
 
 
+def choose_example() -> list:
+    os.system("cls")
+    print("选择示例条码\n"
+          "\033[96m1.二阶段条码\n2.三阶段条码\n\033[0m")
+    cmd = input("\033[92m> \033[0m")
+    try:
+        cmd = int(cmd)
+    except Exception as err:
+        print(f"输入错误:{err}")
+
+    match cmd:
+        case 1:
+            # 二阶段Code49
+            code = [
+                '11143121314115211131114321124131314',
+                '11221611211411251111225122311314214',
+                '11123232212411212332131231332321114',
+                '11251311211242114112215212413213114',
+                '11123121511212521211113243422213114',
+                '11224211311211313421211153141112154'
+            ]
+        case 2:
+            # 三阶段Code49
+            code = [
+                '11134121223121221412111433421123214',
+                '11212252111231233112152122311314214',
+                '11112411421115123211311315411311414'
+            ]
+        case _:
+            raise ValueError("输入错误")
+
+    print(f"示例Code49条码{cmd}：\n\033[96mcode\033[0m = \033[93m[\033[0m")
+    for r in code:
+        print(f"    '{r}',")
+    print("\033[93m]\033[0m")
+    _ = input("按Enter进行解码")
+    return code
+
+
+def main_menu() -> None:
+    """打印主菜单"""
+    print("Code49 Decoder")
+    print("=" * 20)
+    print("""\033[96m选择输入方式
+1.从txt文件输入
+2.查看示例
+0.退出程序\033[0m
+输入数字后按Enter
+使用方法见 https://github.com/Leo-455/code49-decoder""")
+
+
+def read_from_txt():
+    """从 txt 文件中读取code"""
+    os.system("cls")
+    print("请输入txt文件路径\n若在同一目录下，可输入文件名")
+    path = input("\033[92m> \033[0m")
+    if not path.lower().endswith(".txt"):
+        path += ".txt"
+
+    try:
+        with open(path, 'r', encoding="utf-8") as file:
+            code = [x.strip().replace("_", "") for x in file.readlines() if x.strip()]
+    except Exception as err:
+        print(f"txt读取失败：{err}")
+        return None
+
+    print(f"读取Code49条码{path}：\n\033[96mcode\033[0m = \033[93m[\033[0m")
+    for r in code:
+        print(f"    '{r}',")
+    print("\033[93m]\033[0m")
+    _ = input("按Enter进行解码")
+
+    return code
+
+
+def save_result(result: str) -> None:
+    """
+    将解码结果保存到文件中
+
+    Args:
+        result: 要保存的结果
+    """
+    t = time.strftime("%Y-%m-%d %H-%M", time.localtime())
+    default_path = f"result_{t}.txt"
+
+    print(f"请输入文件名，留空使用默认文件名{default_path}")
+    path = input("\033[92m> \033[0m")
+
+    if path == '':
+        path = default_path
+    if not path.lower().endswith(".txt"):
+        path += ".txt"
+    with open(path, "w", encoding="utf-8") as f:
+        f.write(result)
+
+    print(f"\033[92m{path} 保存成功\033[0m")
+
+
+def main() -> None:
+    global success
+    while True:
+        try:
+            os.system("cls")
+            text = ""
+            success = None
+
+            main_menu()
+            cmd = input("\033[92m> \033[0m")
+
+            try:
+                cmd = int(cmd)
+            except ValueError:
+                _ = input("请输入数字\n按Enter继续")
+                continue
+
+            match cmd:
+                case 0:
+                    break
+
+                case 1:
+                    code = read_from_txt()
+                    if code:
+                        text = decode(code)
+
+                case 2:
+                    code = choose_example()
+                    if code:
+                        text = decode(code)
+
+                case _:
+                    _ = input("输入错误\n按Enter继续")
+                    continue
+
+            if success is True:
+                print("\ndecode \033[1;32mSUCCESS!\033[0m")
+                print("Result:")
+                print(text)
+            elif success is False:
+                print("\033[0;31m\nERROR occurred during decode The result might be wrong.\033[0m")
+                print("Result:")
+                print(text)
+            elif success is None:
+                _ = input("按Enter继续")
+                continue
+
+            print("\n是否保存结果？[y/n]")
+            cmd = input("\033[92m> \033[0m")
+            match cmd.lower():
+                case "y":
+                    save_result(text)
+                case "n":
+                    pass
+                case _:
+                    continue
+
+            _ = input("按Enter继续")
+        except Exception as err:
+            print(err)
+            _ = input("按Enter继续")
+
+
 # Main entry
 if __name__ == '__main__':
-    # Test encoder
-    # test.test_cases()
-
-    # Decode
-
-    # 二阶段Code49
-    code = [
-      '11143121314115211131114321124131314',
-      '11221611211411251111225122311314214',
-      '11123232212411212332131231332321114',
-      '11251311211242114112215212413213114',
-      '11123121511212521211113243422213114',
-      '11224211311211313421211153141112154'
-    ]
-
-    # 三阶段Code49
-    # code = [
-    #   '11134121223121221412111433421123214',
-    #   '11212252111231233112152122311314214',
-    #   '11112411421115123211311315411311414'
-    # ]
-
-    text = decode(code)
-    if success is True:
-        print("\ndecode \033[1;32mSUCCESS!\033[0m")
-    elif success is False:
-        print("\033[0;31m\nERROR occurred during decode The result might be wrong.\033[0m")
-    print("Result:")
-    print(text)
+    main()
