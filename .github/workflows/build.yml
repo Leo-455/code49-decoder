@@ -1,0 +1,35 @@
+name: Build and Release EXE
+
+on:
+  push:
+    tags:
+      - "v*"
+
+permissions:
+  contents: write
+
+jobs:
+  build:
+    runs-on: windows-latest
+
+    steps:
+      - name: Checkout source
+        uses: actions/checkout@v4
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Install PyInstaller
+        run: pip install pyinstaller
+
+      - name: Build EXE
+        run: pyinstaller -F -n Code49Decoder_${{ github.ref_name }} main.py
+
+      - name: Create Release
+        uses: softprops/action-gh-release@v2
+        with:
+          files: dist/Code49Decoder_${{ github.ref_name }}.exe
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

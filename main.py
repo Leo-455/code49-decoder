@@ -243,7 +243,7 @@ def main_menu() -> None:
     print("""\033[96m选择输入方式
 1.从txt文件输入
 2.查看示例
-0.退出程序\033[0m
+0.退出\033[0m
 输入数字后按Enter
 使用方法见 https://github.com/Leo-455/code49-decoder""")
 
